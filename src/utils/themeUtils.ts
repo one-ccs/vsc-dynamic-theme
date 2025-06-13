@@ -11,7 +11,7 @@ import { config } from "../extension";
  * @returns 时间对象
  */
 export function parseTime(time: string, offset: number = 0): Date {
-    const [hour = '0', minute = '0', second = '0'] = time.split(':');
+    const [hour = '0', minute = '0', second = '0'] = (time || '00:00:00').split(':');
     return new Date(new Date().setHours(parseInt(hour), parseInt(minute), parseInt(second) + offset));
 }
 
@@ -74,16 +74,21 @@ export function getSunriseAndSunset(config: IConfig): Promise<SunriseAndSunset> 
 
 // 缓存变量
 let _sunriseAndSunset: SunriseAndSunset | undefined;
-let _sunrise: number | undefined;
-let _sunset: number | undefined;
+let _sunrise: Date | undefined;
+let _sunset: Date | undefined;
 let _currentTheme: string | undefined;
 
+/**
+ * 更新主题
+ * @returns 下一次更新时间 ms
+ */
 export async function updateTheme() {
     const sunriseAndSunset = _sunriseAndSunset || await getSunriseAndSunset(config!);
     const sunrise = _sunrise || parseTime(sunriseAndSunset.sunrise, config?.lightOffset);
     const sunset = _sunset || parseTime(sunriseAndSunset.sunset, config?.darkOffset);
     const { dark, light, darkOffset, lightOffset } = config!;
     const now = new Date();
+    const next = (now >= sunrise) ? sunset.valueOf() - now.valueOf() : sunrise.valueOf() - now.valueOf();
     const theme = now >= sunrise && now < sunset
         ? light
         : dark;
@@ -92,6 +97,6 @@ export async function updateTheme() {
         console.log(`[${new Date().toLocaleString()}] - 日出时间 "${sunrise.toLocaleString()}(${lightOffset}s)"，日落时间 "${sunset.toLocaleString()}(${darkOffset}s)"，设置主题 "${theme}"`);
         _currentTheme = theme;
         setTheme(theme);
-        return;
     }
+    return next;
 }

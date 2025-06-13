@@ -14,11 +14,15 @@ export let globalState: vscode.Memento | undefined;
 export let config: IConfig | undefined;
 
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
 	globalState = context.globalState;
 	config = getThemeConfig();
 
-	const task = setInterval(() => updateTheme(), 5 * 60 * 1000);
+	// 动态调整执行频率
+	let next = await updateTheme();
+	const task = setInterval(async () => {
+		next = await updateTheme();
+	}, Math.max(5000, Math.min(1000 * 60 * 30, next / 2)));
 
 	context.subscriptions.push(
 		new vscode.Disposable(() => clearInterval(task)),
