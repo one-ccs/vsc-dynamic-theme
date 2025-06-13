@@ -35,6 +35,15 @@ export function getThemeConfig(): IConfig {
 }
 
 /**
+ * 更新扩展配置
+ * @param key 配置
+ * @param value 值
+ */
+export function updateThemeConfig(key: keyof IConfig, value: string | number) {
+    vscode.workspace.getConfiguration(EXTENSION_NAME).update(key, value, true);
+}
+
+/**
  * 获取持久化数据
  * @param key 名称
  * @param defaultValue 默认值

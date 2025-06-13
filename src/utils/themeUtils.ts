@@ -23,10 +23,14 @@ export function getDate(): string {
     return `${year}.${month}.${day}`;
 }
 
+// 缓存请求
+const fetchCache: { [key: string]: Promise<SunriseAndSunset> | undefined } = {};
 
 export function fetchSunriseAndSunset(config: IConfig, date: string): Promise<SunriseAndSunset> {
-    return new Promise(resolve => {
-        fetch(`https://richurimo.bmcx.com/${config.longitude}__jw__${config.latitude}__richurimo/`)
+    const url = `https://richurimo.bmcx.com/${config.longitude}__jw__${config.latitude}__richurimo/`;
+
+    return fetchCache[url] ? fetchCache[url] : fetchCache[url] = new Promise(resolve => {
+        fetch(url)
         .then(res => res.text())
         .then(html => {
             const list = html.match(/(\d{4}年\d{2}月\d{2}日)[\s\S]+?(\d{2}:\d{2}:\d{2})([\s\S]+?\d{2}:\d{2}:\d{2})[\s\S]+?(\d{2}:\d{2}:\d{2})/g)
@@ -50,17 +54,16 @@ export function fetchSunriseAndSunset(config: IConfig, date: string): Promise<Su
     });
 }
 
-export function getSunriseAndSunset(): Promise<SunriseAndSunset> {
+export function getSunriseAndSunset(config: IConfig): Promise<SunriseAndSunset> {
     return new Promise(resolve => {
-        const sunMap: { [key: string]: SunriseAndSunset } = getStorage('sunMap', {});
-        const config = getThemeConfig();
-        const date = getDate();
-
         switch (config.mode) {
             case 'fixed':
                 resolve({ sunrise: config.lightTime, sunset: config.darkTime });
                 break;
             case 'auto':
+                const sunMap: { [key: string]: SunriseAndSunset } = getStorage('sunMap', {});
+                const date = getDate();
+
                 sunMap[date]
                     ? resolve(sunMap[date])
                     : resolve(fetchSunriseAndSunset(config, date));
@@ -76,7 +79,7 @@ let _sunset: number | undefined;
 let _currentTheme: string | undefined;
 
 export async function updateTheme() {
-    const sunriseAndSunset = _sunriseAndSunset || await getSunriseAndSunset();
+    const sunriseAndSunset = _sunriseAndSunset || await getSunriseAndSunset(config!);
     const sunrise = _sunrise || parseTime(sunriseAndSunset.sunrise, config?.lightOffset);
     const sunset = _sunset || parseTime(sunriseAndSunset.sunset, config?.darkOffset);
     const { dark, light, darkOffset, lightOffset } = config!;

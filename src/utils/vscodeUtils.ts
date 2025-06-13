@@ -30,7 +30,5 @@ export function getThemes(uiTheme: 'vs-dark' | 'vs' | null = null): ITheme[] {
  * @param id 主题 id
  */
 export function setTheme(id: string): void {
-    console.log(`设置主题 ${id}`);
-
     vscode.workspace.getConfiguration().update('workbench.colorTheme', id, true);
 }

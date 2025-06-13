@@ -5,9 +5,8 @@ import { EXTENSION_NAME } from "./params/params";
 import {
 	showWarning,
 	getThemes,
-	setTheme,
 } from "./utils/vscodeUtils";
-import { getThemeConfig } from './utils/configUtils';
+import { getThemeConfig, updateThemeConfig } from './utils/configUtils';
 import { updateTheme } from "./utils/themeUtils";
 
 
@@ -26,6 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.workspace.onDidChangeConfiguration((event: vscode.ConfigurationChangeEvent) => {
 			if (event.affectsConfiguration(EXTENSION_NAME)) {
 				config = getThemeConfig();
+				updateTheme();
 			}
 		}),
 		vscode.commands.registerCommand(`${EXTENSION_NAME}.dark`, async () => {
@@ -42,7 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
 				placeHolder: '选择深色模式使用的主题',
 			});
 			if (theme) {
-				setTheme(theme.value || theme.label);
+				updateThemeConfig('dark', theme.value || theme.label);
 			}
 		}),
 		vscode.commands.registerCommand(`${EXTENSION_NAME}.light`, async () => {
@@ -59,7 +59,7 @@ export function activate(context: vscode.ExtensionContext) {
 				placeHolder: '选择浅色模式使用的主题',
 			});
 			if (theme) {
-				setTheme(theme.value || theme.label);
+				updateThemeConfig('light', theme.value || theme.label);
 			}
 		}),
 	)
