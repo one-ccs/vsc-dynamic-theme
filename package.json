@@ -1,0 +1,143 @@
+{
+  "name": "vsc-dynamic-theme",
+  "displayName": "VSC Dynamic Theme",
+  "description": "根据日出日落时间，自动切换深色或浅色主题",
+  "version": "0.1.0",
+  "publisher": "one-ccs",
+  "license": "MIT",
+  "icon": "icon.png",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Themes",
+    "Other"
+  ],
+  "tags": [
+    "theme",
+    "dark",
+    "light",
+    "auto"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/one-ccs/vsc-dynamic-theme.git"
+  },
+  "homepage": "https://github.com/one-ccs/vsc-dynamic-theme#readme",
+  "bugs": {
+    "url": "https://github.com/one-ccs/vsc-dynamic-theme/issues"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vsc-dynamic-theme.dark",
+        "title": "指定深色模式使用的主题",
+        "category": "VSC Dynamic Theme"
+      },
+      {
+        "command": "vsc-dynamic-theme.light",
+        "title": "指定浅色模式使用的主题",
+        "category": "VSC Dynamic Theme"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "VSC Dynamic Theme",
+      "properties": {
+        "vsc-dynamic-theme.mode": {
+          "order": 0,
+          "description": "切换主题的模式",
+          "scope": "resource",
+          "type": "string",
+          "enum": [
+            "auto",
+            "fixed"
+          ],
+          "enumDescriptions": [
+            "根据日出日落时间自动切换主题",
+            "根据设置的时间切换主题"
+          ],
+          "default": "auto"
+        },
+        "vsc-dynamic-theme.longitude": {
+          "order": 1,
+          "description": "经度，用于计算日出日落时间",
+          "scope": "resource",
+          "type": "number",
+          "default": 116.39770677587353
+        },
+        "vsc-dynamic-theme.latitude": {
+          "order": 2,
+          "description": "纬度，用于计算日出日落时间",
+          "scope": "resource",
+          "type": "number",
+          "default": 39.907576244604115
+        },
+        "vsc-dynamic-theme.darkTime": {
+          "order": 3,
+          "markdownDescription": "深色模式切换时间，24小时制，格式为 `hh:mm`",
+          "scope": "resource",
+          "type": "string",
+          "default": "19:00"
+        },
+        "vsc-dynamic-theme.lightTime": {
+          "order": 4,
+          "markdownDescription": "浅色模式切换时间，24小时制，格式为 `hh:mm`",
+          "scope": "resource",
+          "type": "string",
+          "default": "8:00"
+        },
+        "vsc-dynamic-theme.darkOffset": {
+          "order": 5,
+          "markdownDescription": "深色模式切换时间的偏移量，单位秒，正数表示晚，负数表示早",
+          "scope": "resource",
+          "type": "number",
+          "default": 0
+        },
+        "vsc-dynamic-theme.lightOffset": {
+          "order": 6,
+          "markdownDescription": "浅色模式切换时间的偏移量，单位秒，正数表示晚，负数表示早",
+          "scope": "resource",
+          "type": "number",
+          "default": 0
+        },
+        "vsc-dynamic-theme.dark": {
+          "order": 7,
+          "markdownDescription": "深色模式使用的主题（推荐使用命令 `vsc-dynamic-theme.dark` 设置）",
+          "scope": "resource",
+          "type": "string",
+          "default": "Default Dark+"
+        },
+        "vsc-dynamic-theme.light": {
+          "order": 8,
+          "markdownDescription": "浅色模式使用的主题（推荐使用命令 `vsc-dynamic-theme.light` 设置）",
+          "scope": "resource",
+          "type": "string",
+          "default": "Default Light+"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "watch": "tsc -watch -p ./",
+    "compile": "tsc -p ./",
+    "lint": "eslint src",
+    "pretest": "npm run compile && npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.100.0",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.3.0",
+    "@typescript-eslint/parser": "^8.3.0",
+    "eslint": "^9.9.1",
+    "typescript": "^5.5.4",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  }
+}
