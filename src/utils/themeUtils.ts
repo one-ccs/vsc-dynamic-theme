@@ -15,8 +15,14 @@ export function parseTime(time: string, offset: number = 0): Date {
     return new Date(new Date().setHours(parseInt(hour), parseInt(minute), parseInt(second) + offset));
 }
 
-export function getDate(): string {
+/**
+ * 获取当前日期字符串
+ * @param dayOffset 偏移天数，正数向未来偏移，负数向过去偏移
+ * @returns 日期字符串
+ */
+export function getDate(dayOffset: number = 0): string {
     const now = new Date();
+    dayOffset && now.setDate(now.getDate() + dayOffset);
     const year = now.getFullYear();
     const month = (now.getMonth() + 1).toString().padStart(2, '0');
     const day = now.getDate().toString().padStart(2, '0');
@@ -54,7 +60,7 @@ export function fetchSunriseAndSunset(config: IConfig, date: string): Promise<Su
     });
 }
 
-export function getSunriseAndSunset(config: IConfig): Promise<SunriseAndSunset> {
+export function getSunriseAndSunset(config: IConfig, date: string): Promise<SunriseAndSunset> {
     return new Promise(resolve => {
         switch (config.mode) {
             case 'fixed':
@@ -62,7 +68,6 @@ export function getSunriseAndSunset(config: IConfig): Promise<SunriseAndSunset> 
                 break;
             case 'auto':
                 const sunMap: { [key: string]: SunriseAndSunset } = getStorage('sunMap', {});
-                const date = getDate();
 
                 sunMap[date]
                     ? resolve(sunMap[date])
@@ -73,9 +78,6 @@ export function getSunriseAndSunset(config: IConfig): Promise<SunriseAndSunset> 
 }
 
 // 缓存变量
-let _sunriseAndSunset: SunriseAndSunset | undefined;
-let _sunrise: Date | undefined;
-let _sunset: Date | undefined;
 let _currentTheme: string | undefined;
 
 /**
@@ -83,12 +85,11 @@ let _currentTheme: string | undefined;
  * @returns 下一次更新时间 ms
  */
 export async function updateTheme() {
-    const sunriseAndSunset = _sunriseAndSunset || await getSunriseAndSunset(config!);
-    const sunrise = _sunrise || parseTime(sunriseAndSunset.sunrise, config?.lightOffset);
-    const sunset = _sunset || parseTime(sunriseAndSunset.sunset, config?.darkOffset);
+    const sunriseAndSunset = await getSunriseAndSunset(config!, getDate());
+    const sunrise = parseTime(sunriseAndSunset.sunrise, config?.lightOffset);
+    const sunset = parseTime(sunriseAndSunset.sunset, config?.darkOffset);
     const { dark, light, darkOffset, lightOffset } = config!;
     const now = new Date();
-    const next = (now >= sunrise) ? sunset.valueOf() - now.valueOf() : sunrise.valueOf() - now.valueOf();
     const theme = now >= sunrise && now < sunset
         ? light
         : dark;
@@ -98,5 +99,14 @@ export async function updateTheme() {
         _currentTheme = theme;
         setTheme(theme);
     }
-    return next;
+    if (now >= sunset) {
+        const sunriseAndSunsetNext = await getSunriseAndSunset(config!, getDate(1));
+        const sunriseNext = parseTime(sunriseAndSunsetNext.sunrise, (config?.lightOffset || 0) + 60 * 60 * 24);
+
+        return sunriseNext.getTime() - now.getTime();
+    }
+    if (now >= sunrise) {
+        return sunset.getTime() - now.getTime();
+    }
+    return sunrise.getTime() - now.getTime();
 }
