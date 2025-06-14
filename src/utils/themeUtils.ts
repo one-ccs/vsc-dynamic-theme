@@ -38,7 +38,12 @@ const fetchCache: { [key: string]: Promise<SunriseAndSunset> | undefined } = {};
 export function fetchSunriseAndSunset(config: IConfig, date: string): Promise<SunriseAndSunset> {
     const url = `https://richurimo.bmcx.com/${config.longitude}__jw__${config.latitude}__richurimo/`;
 
-    return fetchCache[url] ? fetchCache[url] : fetchCache[url] = new Promise(resolve => {
+    if (fetchCache[url]) {
+        return fetchCache[url];
+    }
+
+    outputChannel?.appendLine(`[${new Date().toLocaleString()}] - 获取日出日落`);
+    fetchCache[url] = new Promise(resolve => {
         fetch(url)
         .then(res => res.text())
         .then(html => {
@@ -61,6 +66,7 @@ export function fetchSunriseAndSunset(config: IConfig, date: string): Promise<Su
             return resolve({ sunrise: config.lightTime, sunset: config.darkTime });
         });
     });
+    return fetchCache[url];
 }
 
 export function getSunriseAndSunset(config: IConfig, date: string): Promise<SunriseAndSunset> {
@@ -88,23 +94,27 @@ let _currentTheme: string | undefined;
  * @returns 下一次更新时间 ms
  */
 export async function updateTheme() {
-    const sunriseAndSunset = await getSunriseAndSunset(config!, getDate());
-    const sunrise = parseTime(sunriseAndSunset.sunrise, config!.lightOffset);
-    const sunset = parseTime(sunriseAndSunset.sunset, config!.darkOffset);
     const { dark, light, darkOffset, lightOffset } = config!;
+    const sunriseAndSunset = await getSunriseAndSunset(config!, getDate());
+    const sunrise = parseTime(sunriseAndSunset.sunrise, lightOffset);
+    const sunset = parseTime(sunriseAndSunset.sunset, darkOffset);
     const now = new Date();
     const theme = now >= sunrise && now < sunset
         ? light
         : dark;
 
+    outputChannel?.appendLine(`[${now.toLocaleString()}] - 检查更新`);
     if (_currentTheme !== theme) {
-        outputChannel?.appendLine(`[${now.toLocaleString()}] - 日出时间 "${sunrise.toLocaleString()}(${lightOffset}s)"，日落时间 "${sunset.toLocaleString()}(${darkOffset}s)"，设置主题 "${theme}"`);
+        const _lightOffset = (lightOffset > 0 ? '+' : '') + lightOffset + 's';
+        const _darkOffset = (darkOffset > 0 ? '+' : '') + darkOffset + 's';
+
+        outputChannel?.appendLine(`[${now.toLocaleString()}] - 设置主题 "${theme}"，日出时间 "${sunrise.toLocaleTimeString()} (${_lightOffset})"，日落时间 "${sunset.toLocaleTimeString()} (${_darkOffset})"`);
         _currentTheme = theme;
         setTheme(theme);
     }
     if (now >= sunset) {
         const sunriseAndSunsetNext = await getSunriseAndSunset(config!, getDate(1));
-        const sunriseNext = parseTime(sunriseAndSunsetNext.sunrise, config!.lightOffset + 60 * 60 * 24);
+        const sunriseNext = parseTime(sunriseAndSunsetNext.sunrise, lightOffset + 60 * 60 * 24);
 
         return sunriseNext.getTime() - now.getTime();
     }

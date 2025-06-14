@@ -25,7 +25,7 @@ export let config: IConfig | undefined;
 
 
 export async function activate(context: vscode.ExtensionContext) {
-    outputChannel = vscode.window.createOutputChannel(EXTENSION_NAME);
+    outputChannel = vscode.window.createOutputChannel('VSC Dynamic Theme');
 	globalState = context.globalState;
 	config = getThemeConfig();
 
@@ -50,7 +50,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			const lightOffset = (config!.lightOffset > 0 ? '+' : '') + config!.lightOffset + 's';
 			const darkOffset = (config!.darkOffset > 0 ? '+' : '') + config!.darkOffset + 's';
 
-			showInfo(`日出时间: ${sunrise.toLocaleTimeString()} (${lightOffset})\n日落时间: ${sunset.toLocaleTimeString()} (${darkOffset})`);
+			showInfo(`日出时间 "${sunrise.toLocaleTimeString()} (${lightOffset})"，日落时间 "${sunset.toLocaleTimeString()} (${darkOffset})"`);
 		}),
 		vscode.commands.registerCommand(`${EXTENSION_NAME}.dark`, async () => {
 			const themes = getThemes('vs-dark');
