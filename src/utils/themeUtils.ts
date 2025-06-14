@@ -1,7 +1,10 @@
 import { IConfig, SunriseAndSunset } from "../types/interface";
-import { getThemeConfig, getStorage, updateStorage } from "./configUtils";
+import { getStorage, updateStorage } from "./configUtils";
 import { showWarning, setTheme } from "./vscodeUtils";
-import { config } from "../extension";
+import {
+    outputChannel,
+    config,
+ } from "../extension";
 
 
 /**
@@ -86,8 +89,8 @@ let _currentTheme: string | undefined;
  */
 export async function updateTheme() {
     const sunriseAndSunset = await getSunriseAndSunset(config!, getDate());
-    const sunrise = parseTime(sunriseAndSunset.sunrise, config?.lightOffset);
-    const sunset = parseTime(sunriseAndSunset.sunset, config?.darkOffset);
+    const sunrise = parseTime(sunriseAndSunset.sunrise, config!.lightOffset);
+    const sunset = parseTime(sunriseAndSunset.sunset, config!.darkOffset);
     const { dark, light, darkOffset, lightOffset } = config!;
     const now = new Date();
     const theme = now >= sunrise && now < sunset
@@ -95,13 +98,13 @@ export async function updateTheme() {
         : dark;
 
     if (_currentTheme !== theme) {
-        console.log(`[${new Date().toLocaleString()}] - 日出时间 "${sunrise.toLocaleString()}(${lightOffset}s)"，日落时间 "${sunset.toLocaleString()}(${darkOffset}s)"，设置主题 "${theme}"`);
+        outputChannel?.appendLine(`[${now.toLocaleString()}] - 日出时间 "${sunrise.toLocaleString()}(${lightOffset}s)"，日落时间 "${sunset.toLocaleString()}(${darkOffset}s)"，设置主题 "${theme}"`);
         _currentTheme = theme;
         setTheme(theme);
     }
     if (now >= sunset) {
         const sunriseAndSunsetNext = await getSunriseAndSunset(config!, getDate(1));
-        const sunriseNext = parseTime(sunriseAndSunsetNext.sunrise, (config?.lightOffset || 0) + 60 * 60 * 24);
+        const sunriseNext = parseTime(sunriseAndSunsetNext.sunrise, config!.lightOffset + 60 * 60 * 24);
 
         return sunriseNext.getTime() - now.getTime();
     }

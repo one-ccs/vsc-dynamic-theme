@@ -2,7 +2,7 @@
   "name": "vsc-dynamic-theme",
   "displayName": "VSC Dynamic Theme",
   "description": "根据日出日落时间，自动切换深色或浅色主题",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "publisher": "one-ccs",
   "license": "MIT",
   "icon": "icon.png",
@@ -33,6 +33,11 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
+      {
+        "command": "vsc-dynamic-theme.showTime",
+        "title": "显示当前使用的日出日落时间",
+        "category": "VSC Dynamic Theme"
+      },
       {
         "command": "vsc-dynamic-theme.dark",
         "title": "指定深色模式使用的主题",
@@ -96,14 +101,14 @@
           "markdownDescription": "深色模式切换时间的偏移量，单位秒，正数表示晚，负数表示早",
           "scope": "resource",
           "type": "number",
-          "default": 0
+          "default": -7200
         },
         "vsc-dynamic-theme.lightOffset": {
           "order": 6,
           "markdownDescription": "浅色模式切换时间的偏移量，单位秒，正数表示晚，负数表示早",
           "scope": "resource",
           "type": "number",
-          "default": 0
+          "default": 7200
         },
         "vsc-dynamic-theme.dark": {
           "order": 7,

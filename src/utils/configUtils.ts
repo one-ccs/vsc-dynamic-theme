@@ -27,8 +27,8 @@ export function getThemeConfig(): IConfig {
         latitude: config.get('latitude', 39.907576244604115),
         darkTime: config.get('darkTime', '19:00'),
         lightTime: config.get('lightTime', '8:00'),
-        darkOffset: config.get('darkOffset', 0),
-        lightOffset: config.get('lightOffset', 0),
+        darkOffset: config.get('darkOffset', -7200),
+        lightOffset: config.get('lightOffset', 7200),
         dark: config.get('dark', 'Default Dark+'),
         light: config.get('light', 'Default Light+'),
     }

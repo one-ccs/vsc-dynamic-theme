@@ -3,18 +3,29 @@ import * as vscode from 'vscode';
 import { IConfig } from "./types/interface";
 import { EXTENSION_NAME } from "./params/params";
 import {
+	showInfo,
 	showWarning,
 	getThemes,
 } from "./utils/vscodeUtils";
-import { getThemeConfig, updateThemeConfig } from './utils/configUtils';
-import { updateTheme } from "./utils/themeUtils";
+import {
+	getThemeConfig,
+	updateThemeConfig,
+} from './utils/configUtils';
+import {
+	getDate,
+	getSunriseAndSunset,
+	parseTime,
+	updateTheme,
+} from "./utils/themeUtils";
 
 
+export let outputChannel: vscode.OutputChannel | undefined;
 export let globalState: vscode.Memento | undefined;
 export let config: IConfig | undefined;
 
 
 export async function activate(context: vscode.ExtensionContext) {
+    outputChannel = vscode.window.createOutputChannel(EXTENSION_NAME);
 	globalState = context.globalState;
 	config = getThemeConfig();
 
@@ -31,6 +42,15 @@ export async function activate(context: vscode.ExtensionContext) {
 				config = getThemeConfig();
 				updateTheme();
 			}
+		}),
+		vscode.commands.registerCommand(`${EXTENSION_NAME}.showTime`, async () => {
+			const sunriseAndSunset = await getSunriseAndSunset(config!, getDate());
+			const sunrise = parseTime(sunriseAndSunset.sunrise, config!.lightOffset);
+			const sunset = parseTime(sunriseAndSunset.sunset, config!.darkOffset);
+			const lightOffset = (config!.lightOffset > 0 ? '+' : '') + config!.lightOffset + 's';
+			const darkOffset = (config!.darkOffset > 0 ? '+' : '') + config!.darkOffset + 's';
+
+			showInfo(`日出时间: ${sunrise.toLocaleTimeString()} (${lightOffset})\n日落时间: ${sunset.toLocaleTimeString()} (${darkOffset})`);
 		}),
 		vscode.commands.registerCommand(`${EXTENSION_NAME}.dark`, async () => {
 			const themes = getThemes('vs-dark');
