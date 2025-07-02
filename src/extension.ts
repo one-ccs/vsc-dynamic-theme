@@ -12,6 +12,7 @@ import {
 	updateThemeConfig,
 } from './utils/configUtils';
 import {
+	bounds,
 	getDate,
 	getSunriseAndSunset,
 	parseTime,
@@ -30,13 +31,15 @@ export async function activate(context: vscode.ExtensionContext) {
 	config = getThemeConfig();
 
 	// 动态调整执行频率
-	let next = await updateTheme();
-	const task = setInterval(async () => {
-		next = await updateTheme();
-	}, Math.max(5000, Math.min(1000 * 60 * 30, next / 2)));
+	let updateTimer: NodeJS.Timeout | undefined;
+	async function scheduleNextUpdate() {
+		const next = await updateTheme();
+		updateTimer = setTimeout(scheduleNextUpdate, bounds(next, 1000 * 5, 1000 * 60 * 30));
+	}
+	scheduleNextUpdate();
 
 	context.subscriptions.push(
-		new vscode.Disposable(() => clearInterval(task)),
+		new vscode.Disposable(() => clearTimeout(updateTimer)),
 		vscode.workspace.onDidChangeConfiguration((event: vscode.ConfigurationChangeEvent) => {
 			if (event.affectsConfiguration(EXTENSION_NAME)) {
 				config = getThemeConfig();

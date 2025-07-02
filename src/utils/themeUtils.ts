@@ -4,8 +4,19 @@ import { showWarning, setTheme } from "./vscodeUtils";
 import {
     outputChannel,
     config,
- } from "../extension";
+} from "../extension";
 
+
+/**
+ * 限定数字范围
+ * @param num 数字
+ * @param _min 最小值
+ * @param _max 最大值
+ * @returns 数字
+ */
+export function bounds(num: number, _min: number, _max: number): number {
+    return Math.min(Math.max(num, _min), _max);
+}
 
 /**
  * 解析时间字符串
@@ -112,6 +123,7 @@ export async function updateTheme() {
         _currentTheme = theme;
         setTheme(theme);
     }
+
     if (now >= sunset) {
         const sunriseAndSunsetNext = await getSunriseAndSunset(config!, getDate(1));
         const sunriseNext = parseTime(sunriseAndSunsetNext.sunrise, lightOffset + 60 * 60 * 24);

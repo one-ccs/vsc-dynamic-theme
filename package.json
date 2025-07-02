@@ -2,7 +2,7 @@
   "name": "vsc-dynamic-theme",
   "displayName": "VSC Dynamic Theme",
   "description": "根据日出日落时间，自动切换深色或浅色主题",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "publisher": "one-ccs",
   "license": "MIT",
   "icon": "icon.png",
